@@ -35,5 +35,17 @@ export default {
   // 根据id获取用户信息
   getUserInfoById(id) {
     return request.get(`/users/${id}`);
+  },
+  //提交修改用户数据
+  putUserInfo(id, data) {
+    return request.put(`/users/${id}`, data);
+  },
+  // 删除用户
+  deleteUser(id) {
+    return request.delete(`/users/${id}`);
+  },
+  // 改变用户状态
+  changeState(uId, type) {
+    return request.put(`users/${uId}/state/${type}`);
   }
 };
