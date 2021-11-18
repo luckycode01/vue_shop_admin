@@ -70,7 +70,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.el-card {
-  // height: calc(100vh - 90px);
-}
 </style>

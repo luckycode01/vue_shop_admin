@@ -26,7 +26,7 @@
           <template slot-scope="{row}">
             <HintButton @click="showAddOrEditUserDialog(row.id)" :title='"编辑"' type='primary' icon="el-icon-edit" size='mini' circle></HintButton>
             <HintButton @click="deleteUser(row.id,row.username)" :title='"删除"' type='danger' icon="el-icon-delete" size='mini' circle></HintButton>
-            <HintButton :title='"分配权限"' type='warning' icon="el-icon-setting" size='mini' circle></HintButton>
+            <HintButton :title='"分配角色"' type='warning' icon="el-icon-setting" size='mini' circle></HintButton>
           </template>
         </el-table-column>
       </el-table>
