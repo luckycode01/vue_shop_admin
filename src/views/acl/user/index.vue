@@ -26,7 +26,7 @@
           <template slot-scope="{row}">
             <HintButton @click="showAddOrEditUserDialog(row.id)" :title='"编辑"' type='primary' icon="el-icon-edit" size='mini' circle></HintButton>
             <HintButton @click="deleteUser(row.id,row.username)" :title='"删除"' type='danger' icon="el-icon-delete" size='mini' circle></HintButton>
-            <HintButton :title='"分配角色"' type='warning' icon="el-icon-setting" size='mini' circle></HintButton>
+            <HintButton @click='setRole(row)' :title='"分配角色"' type='warning' icon="el-icon-setting" size='mini' circle></HintButton>
           </template>
         </el-table-column>
       </el-table>
@@ -53,6 +53,23 @@
         <el-button @click="addOrEditUserDialog = false">取 消</el-button>
         <el-button type="primary" @click="addUser()">确 定</el-button>
       </div>
+    </el-dialog>
+    <!-- 分配角色 -->
+    <el-dialog title="分配角色" :visible.sync="setRoleDialogVisible" width="50%" @close='setRoleDialogClose'>
+      <div>
+        <p>当前用户：{{userInfo.username}}</p>
+        <p>当前角色：{{userInfo.role_name}}</p>
+        <p>分配角色：
+          <el-select v-model="selectRoleId" placeholder="请选择">
+            <el-option v-for="item in roleList" :key="item.id" :label="item.roleName" :value="item.id">
+            </el-option>
+          </el-select>
+        </p>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveRoleInfo">确 定</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
@@ -99,12 +116,19 @@ export default {
       userList: [],
       total: 0,
       addOrEditUserDialog: false,//控制添加对话框
+      setRoleDialogVisible: false,//分配角色
       userForm: {
         username: '',
         password: '',
         email: '',
         mobile: '',
       },
+      userInfo: {
+        username: '',
+        role_name: ''
+      },
+      roleList: [],//角色列表
+      selectRoleId: '',
     }
   },
   mounted() {
@@ -249,6 +273,31 @@ export default {
         this.$message.error(error);
       }
     },
+    // 分配角色
+    async setRole(row) {
+      this.setRoleDialogVisible = true;
+      this.userInfo = { ...row };
+      // 获取角色列表
+      const res = await this.$API.power.reqRolesDataList();
+      if (res.meta.status !== 200) return this.message.error('角色列表获取失败');
+      this.roleList = res.data;
+
+    },
+    async saveRoleInfo() {
+      if (!this.selectRoleId) return this.$message.error('请选择分配的角色')
+      const res = await this.$API.power.reqSetRole(this.userInfo.id, { rid: this.selectRoleId });
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+      this.$message.success(res.meta.msg);
+      // 关闭对话框
+      this.setRoleDialogVisible = false;
+      // 刷新列表
+      this.getUserList();
+    },
+    // 监视对话框是否关闭
+    setRoleDialogClose() {
+      this.selectRoleId = ''
+      this.userInfo = {}
+    }
   },
 }
 </script>

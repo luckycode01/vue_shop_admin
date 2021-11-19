@@ -22,5 +22,14 @@ export default {
   },
   deleteRoles(id) {
     return request.delete(`roles/${id}`);
+  },
+  deleteRightById(roleId, rightId) {
+    return request.delete(`roles/${roleId}/rights/${rightId}`);
+  },
+  reqRoleEmpower(roleId, data) {
+    return request.post(`roles/${roleId}/rights`, data);
+  },
+  reqSetRole(id, data) {
+    return request.put(`users/${id}/role`, data);
   }
 };
