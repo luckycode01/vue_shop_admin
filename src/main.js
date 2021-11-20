@@ -19,9 +19,11 @@ import "@/permission"; // permission control
 import * as API from "@/api";
 //
 import HintButton from "@/components/HintButton";
+import TreeTable from "vue-table-with-tree-grid";
 
 // 注册组件
 Vue.component("HintButton", HintButton);
+Vue.component("tree-table", TreeTable);
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api

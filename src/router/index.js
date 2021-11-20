@@ -104,7 +104,7 @@ export const constantRoutes = [
         path: "params/list",
         name: "params",
         component: () => import("@/views/goods/params"),
-        meta: { title: "商品参数", icon: "el-icon-s-data" }
+        meta: { title: "分类参数", icon: "el-icon-s-data" }
       },
       {
         path: "/category/list",
