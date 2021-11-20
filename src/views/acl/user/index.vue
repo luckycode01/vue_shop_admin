@@ -34,7 +34,7 @@
       </el-pagination>
     </el-card>
     <!-- 添加或编辑用户 -->
-    <el-dialog title="添加用户" :visible.sync="addOrEditUserDialog" @close="closeAddOrEditUserDialog">
+    <el-dialog :title="dialogTitle" :visible.sync="addOrEditUserDialog" @close="closeAddOrEditUserDialog">
       <el-form :model="userForm" :rules="userFormRules" ref="userFormRef">
         <el-form-item label="用户名称" prop="username" label-width="120px">
           <el-input :disabled="userForm.id" v-model="userForm.username" autocomplete="off"></el-input>
@@ -164,10 +164,6 @@ export default {
       } catch (error) {
         this.$message.error(error.message)
       }
-    },
-    // 搜索
-    searchUser() {
-
     },
     // 打开添加对话框
     async showAddOrEditUserDialog(id) {

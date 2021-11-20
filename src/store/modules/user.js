@@ -41,12 +41,15 @@ const actions = {
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password })
         .then(response => {
-          const { data } = response;
-          commit("SET_TOKEN", data.token);
-          commit("SET_NAME", data.username);
-          setToken(data.token);
-          setUsername(data.username);
-          resolve();
+          if (response.meta.status != 200) reject(response);
+          else {
+            const { data } = response;
+            commit("SET_TOKEN", data.token);
+            commit("SET_NAME", data.username);
+            setToken(data.token);
+            setUsername(data.username);
+            resolve(response);
+          }
         })
         .catch(error => {
           reject(error);

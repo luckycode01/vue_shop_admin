@@ -41,7 +41,7 @@ export default {
   name: 'Login',
   data() {
     const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
+      if (value.length < 5) {
         callback(new Error('Please enter the correct user name'))
       } else {
         callback()
@@ -91,11 +91,13 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
+          this.$store.dispatch('user/login', this.loginForm).then((value) => {
             this.$router.push({ path: this.redirect || '/' })
             this.loading = false
-          }).catch(() => {
+            this.$message.success(value.meta.msg);
+          }).catch((err) => {
             this.loading = false
+            this.$message.error(err.meta.msg);
           })
         } else {
           console.log('error submit!!')

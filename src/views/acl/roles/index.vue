@@ -38,7 +38,7 @@
         </el-table-column>
       </el-table>
     </el-card>
-    <el-dialog title="添加角色" :visible.sync="addOrEditRolesDialog" width="width" @close="closeAddOrEditRolesDialog()">
+    <el-dialog :title="dialogTitle" :visible.sync="addOrEditRolesDialog" width="width" @close="closeAddOrEditRolesDialog()">
       <el-form ref="rolesFormRef" :rules="rolesFormRules" :model="rolesForm" label-width="80px">
         <el-form-item label="角色名称" prop="roleName">
           <el-input v-model="rolesForm.roleName"></el-input>
@@ -94,6 +94,11 @@ export default {
   created() {
     this.getRolesDataList();
   },
+  computed: {
+    dialogTitle() {
+      return this.rolesForm.roleId ? "编辑角色" : "添加角色"
+    }
+  },
   methods: {
     async getRolesDataList() {
       try {
@@ -127,6 +132,7 @@ export default {
         }
       }
     },
+
     // 关闭对话框时清空表单
     closeAddOrEditRolesDialog() {
       this.$refs.rolesFormRef.resetFields();
