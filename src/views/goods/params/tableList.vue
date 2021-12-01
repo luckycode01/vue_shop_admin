@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-table :data='initData' border stripe>
+    <el-table style="margin-top:20px" :data='initData' border stripe>
       <!--展开行 -->
       <el-table-column type='expand'>
         <template slot-scope="{row}">
@@ -16,18 +16,22 @@
       <el-table-column label="参数名称" prop="attr_name"></el-table-column>
       <el-table-column label="操作" width="200px">
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" icon="el-icon-edit">编辑</el-button>
-          <el-button type="danger" size="mini" icon="el-icon-delete ">删除</el-button>
+          <el-button type="primary" size="mini" icon="el-icon-edit" @click="$emit('showEditDialog',row)">编辑</el-button>
+          <el-button type="danger" size="mini" icon="el-icon-delete " @click="$emit('deleteParams',row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
+
   </div>
 </template>
 
 <script>
 export default {
   name: '',
-  props: ['initData']
+  props: ['initData'],
+  methods: {
+
+  }
 }
 </script>
 

@@ -6,16 +6,28 @@
       <el-cascader v-model="selectCateKeys" :options="categoryList" :props="setProps" clearable @change="getParamsData" style="margin:20px 0"></el-cascader>
       <el-tabs v-model="activeName" @tab-click="getParamsData">
         <el-tab-pane label="动态参数" name="many">
-          <el-button type="primary" size="mini" :disabled='isBtnDisabled'>添加参数</el-button>
+          <el-button type="primary" size="mini" :disabled='isBtnDisabled' @click="addEditDialog">添加参数</el-button>
           <!-- 参数表格 -->
-          <TableList :initData="manyTabData"></TableList>
+          <TableList @deleteParams='deleteParams' @showEditDialog='addEditDialog' :initData="manyTabData"></TableList>
         </el-tab-pane>
         <el-tab-pane label="静态属性" name="only">
-          <el-button type="primary" size="mini" :disabled='isBtnDisabled'>添加属性</el-button>
-          <TableList :initData="onlyTabData"></TableList>
+          <el-button type="primary" size="mini" :disabled='isBtnDisabled' @click="addEditDialog">添加属性</el-button>
+          <TableList @deleteParams='deleteParams' @showEditDialog='addEditDialog' :initData="onlyTabData"></TableList>
         </el-tab-pane>
       </el-tabs>
     </el-card>
+    <!-- 添加参数/属性对话框 -->
+    <el-dialog :title="addOrEdit + textTitle" :visible.sync="addOrEditDialogVisible" width="50%" @close="addDialogClose">
+      <el-form :model="addForm" ref="addFormRef" :rules="addFormRules" label-width="100px">
+        <el-form-item :label="textTitle" prop="attr_name">
+          <el-input v-model="addForm.attr_name"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addOrEditDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addParams">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -41,7 +53,7 @@ export default {
       // 静态属性
       onlyTabData: [],
       // 添加对话框显示与隐藏
-      addDialogVisible: false,
+      addOrEditDialogVisible: false,
       // 添加表单
       addForm: {
         attr_name: '',
@@ -58,18 +70,6 @@ export default {
       activeName: 'many',
       // 隐藏显示修改对话框
       editDialogVisible: false,
-      // 修改对话框的表单数据
-      editForm: {
-        attr_name: ''
-      },
-      // 修改参数表单验证规则
-      editFormRules: {
-        attr_name: {
-          required: true, //必填项
-          message: '请输参数名称',
-          trigger: 'blur', //失去焦点时验证
-        },
-      },
       // 输入框的显示与隐藏
       inputVisible: false,
       // 输入框双向数据绑定
@@ -98,8 +98,10 @@ export default {
     textTitle() {
       if (this.activeName === 'many') return '动态参数';
       return '静态属性'
+    },
+    addOrEdit() {
+      return this.addForm.attr_id ? '编辑' : "添加"
     }
-
   },
   methods: {
     async getCategoryList() {
@@ -131,6 +133,63 @@ export default {
         this.manyTabData = res.data;
       else
         this.onlyTabData = res.data;
+    },
+    // 添加/修改参数或属性对话框
+    addEditDialog(params) {
+      //参数或属性表单
+      this.addForm = {
+        attr_name: '',
+      };
+      if (params.cat_id) {
+        this.getByIdSearchParams(params);
+      }
+      this.addOrEditDialogVisible = true;
+    },
+    async getByIdSearchParams(params) {
+      const res = await this.$API.params.reqByIdSearchParams(params.cat_id, params.attr_id, { attr_sel: this.activeName });
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+      this.addForm = res.data;
+    },
+    // 关闭对话框
+    addDialogClose() {
+      this.$refs.addFormRef.resetFields();
+    },
+    addParams() {
+      this.$refs.addFormRef.validate(async valid => {
+        if (!valid) return this.$message.error('请输入正确的数据');
+        const id = this.cateId;
+        const addParamsForm = {
+          attr_name: this.addForm.attr_name,
+          attr_sel: this.activeName,
+        }
+        const res = await this.$API.params.reqAddEditParams(id, addParamsForm, this.addForm.attr_id);
+        if (res.meta.status !== 201 && res.meta.status !== 200) return this.$message.error(res.meta.msg);
+        this.$message.success(res.meta.msg);
+        this.addOrEditDialogVisible = false;
+        this.getParamsData();
+      })
+    },
+    // 删除操作
+    deleteParams(event) {
+      this.$confirm(`是否删除 ${event.attr_name} `, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        const res = await this.$API.params.reqDeleteParams(this.cateId, event.attr_id);
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+        this.$message.success(res.meta.msg);
+        this.getParamsData();
+      }).catch(() => {
+        this.$message.info('已取消删除');
+      });
+    },
+    // 修改按钮，对话框
+    async showEditDialog(params) {
+      const res = await reqByIdSearchParams(params.cat_id, params.attr_id, { attr_sel: this.activeName });
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+      this.editForm = res.data;
+      this.editDialogVisible = true;
     },
   }
 }
