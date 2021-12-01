@@ -8,11 +8,11 @@
         <el-tab-pane label="动态参数" name="many">
           <el-button type="primary" size="mini" :disabled='isBtnDisabled' @click="addEditDialog">添加参数</el-button>
           <!-- 参数表格 -->
-          <TableList @deleteParams='deleteParams' @showEditDialog='addEditDialog' :initData="manyTabData"></TableList>
+          <TableList @addChildParams='addChildParams' @deleteParams='deleteParams' @showEditDialog='addEditDialog' :initData="manyTabData"></TableList>
         </el-tab-pane>
         <el-tab-pane label="静态属性" name="only">
           <el-button type="primary" size="mini" :disabled='isBtnDisabled' @click="addEditDialog">添加属性</el-button>
-          <TableList @deleteParams='deleteParams' @showEditDialog='addEditDialog' :initData="onlyTabData"></TableList>
+          <TableList @addChildParams='addChildParams' @deleteParams='deleteParams' @showEditDialog='addEditDialog' :initData="onlyTabData"></TableList>
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -168,6 +168,14 @@ export default {
         this.addOrEditDialogVisible = false;
         this.getParamsData();
       })
+    },
+    // 添加子属性/参数
+    async addChildParams(attrInfo, row) {
+      attrInfo.attr_sel = this.activeName;
+      // 发送请求，添加可选参数
+      const res = await this.$API.params.reqAddEditParams(this.cateId, attrInfo, row.attr_id);
+      if (res.meta.status !== 200) return this.$message.error('添加失败');
+      this.$message.success(res.meta.msg);
     },
     // 删除操作
     deleteParams(event) {

@@ -30,7 +30,37 @@ export default {
   name: '',
   props: ['initData'],
   methods: {
+    // 点击添加按钮
+    showInput(row) {
+      row.inputVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+    // 键盘enter抬起/或失去焦点
+    async saveTag(row) {
+      const attrInfo = {
+        attr_name: row.attr_name,
+        attr_vals: row.attr_vals.join(' '),
+      }
+      this.$emit('addChildParams', attrInfo, row)
+    },
 
+    handleInputConfirm(row) {
+      if (!row.inputValue.trim()) {
+        row.inputVisible = false;
+        row.inputValue = '';
+        return
+      }
+      row.attr_vals.push(row.inputValue.trim());
+      this.saveTag(row);
+      row.inputVisible = false;
+      row.inputValue = '';
+    },
+    deleteTag(index, row) {
+      row.attr_vals.splice(index, 1);
+      this.saveTag(row);
+    },
   }
 }
 </script>
