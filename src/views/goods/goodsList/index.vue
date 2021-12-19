@@ -75,7 +75,7 @@ export default {
       this.getGoodsList();
     },
     addGoods() {
-      this.$router.push('/goods/add')
+      this.$router.push('/goodsList/add')
     }
 
   }

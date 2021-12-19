@@ -101,6 +101,12 @@ export const constantRoutes = [
         meta: { title: "商品列表", icon: "el-icon-menu" }
       },
       {
+        path: "/goodslist/add",
+        name: "add",
+        component: () => import("@/views/goods/goodsList/add"),
+        meta: { title: "添加商品", icon: "el-icon-menu" }
+      },
+      {
         path: "params/list",
         name: "params",
         component: () => import("@/views/goods/params"),
