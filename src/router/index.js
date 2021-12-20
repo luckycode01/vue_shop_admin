@@ -54,6 +54,7 @@ export const constantRoutes = [
       }
     ]
   },
+
   {
     name: "Acl",
     path: "/acl",
@@ -95,16 +96,17 @@ export const constantRoutes = [
     },
     children: [
       {
-        path: "/goodslist/list",
+        path: "goodslist/list",
         name: "goodslist",
         component: () => import("@/views/goods/goodsList"),
         meta: { title: "商品列表", icon: "el-icon-menu" }
       },
       {
-        path: "/goodslist/add",
+        path: "/goodslist/list/add",
         name: "add",
-        component: () => import("@/views/goods/goodsList/add"),
-        meta: { title: "添加商品", icon: "el-icon-menu" }
+        component: () => import("@/views/goods/goodsList/add")
+        // meta: { title: "商品列表", icon: "el-icon-menu" }
+        // meta: { title: "添加商品", icon: "el-icon-menu" }
       },
       {
         path: "params/list",
@@ -113,7 +115,7 @@ export const constantRoutes = [
         meta: { title: "分类参数", icon: "el-icon-s-data" }
       },
       {
-        path: "/category/list",
+        path: "category/list",
         name: "category",
         component: () => import("@/views/goods/category"),
         meta: { title: "商品分类", icon: "el-icon-share" }
