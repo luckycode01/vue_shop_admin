@@ -123,7 +123,7 @@ export default {
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
       //将attr_vals由字符串转为数组
       res.data.forEach(item => {
-        item.attr_vals = item.attr_vals ? item.attr_vals.split(' ') : []
+        item.attr_vals = item.attr_vals ? item.attr_vals.split(',') : []
         // 为每一个行添加一个属性，控制输入框的显示隐藏
         item.inputVisible = false
         // 表单双向绑定
