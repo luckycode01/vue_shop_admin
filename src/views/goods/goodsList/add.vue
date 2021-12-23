@@ -20,8 +20,8 @@
       </el-row>
       <el-row>
         <el-col :span="24">
-          <el-form ref="addGoodsFormRef" :rules="addGoodsFormRules" v-model="addGoodsForm" label-position='top' label-width="80px">
-            <el-tabs v-model="isActiveTab" tab-position="left">
+          <el-form ref="addGoodsFormRef" :rules="addGoodsFormRules" :model="addGoodsForm" label-position='top' label-width="80px">
+            <el-tabs v-model="isActiveTab" tab-position="left" :before-leave="beforeTabLeave">
               <el-tab-pane label="基本信息" name="0">
                 <el-form-item label="商品名称" prop="goods_name">
                   <el-input v-model="addGoodsForm.goods_name"></el-input>
@@ -41,25 +41,54 @@
               </el-tab-pane>
               <el-tab-pane label="商品参数" name="1">
                 <el-form-item v-for="param in manyParamsList" :key="param.id" :label="param.attr_name" prop="" type="">
-                  <el-checkbox-group v-model="checkList">
-                    <el-checkbox :label="val" v-for="(val,index) in param.attr_vals" :key="index"></el-checkbox>
+                  <el-checkbox-group v-model="param.attr_vals">
+                    <el-checkbox :label="val" v-for="(val,index) in param.attr_vals" :key="index" border></el-checkbox>
                   </el-checkbox-group>
                 </el-form-item>
               </el-tab-pane>
-              <el-tab-pane label="商品属性" name="2">商品属性</el-tab-pane>
-              <el-tab-pane label="商品图片" name="3">商品图片</el-tab-pane>
-              <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
+              <el-tab-pane label="商品属性" name="2">
+                <el-form-item :label="onlyParams.attr_name" v-for="onlyParams in onlyParamsList" :key="onlyParams.attrr_id">
+                  <el-input v-model="onlyParams.attr_vals"></el-input>
+                </el-form-item>
+              </el-tab-pane>
+              <el-tab-pane label="商品图片" name="3">
+                <el-upload :action="uploadeURL" :headers="headerObj" :on-success="handleSuccess" :on-preview="handlePreview" :on-remove="handleRemove" list-type="picture">
+                  <el-button size="small" type="primary">点击上传</el-button>
+                  <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                </el-upload>
+              </el-tab-pane>
+              <el-tab-pane label="商品内容" name="4">
+                <quill-editor v-model="addGoodsForm.goods_introduce" ref="introduceEditor">
+                </quill-editor>
+                <el-form-item>
+                  <el-button @click="addGoods" style="margin-top:20px" type="primary">添加商品</el-button>
+                </el-form-item>
+              </el-tab-pane>
             </el-tabs>
           </el-form>
         </el-col>
       </el-row>
     </el-card>
+    <!-- 图片预览 -->
+    <el-dialog title="图片预览" :visible.sync="preViewImg" width="width">
+      <img :src="preViewPath" alt="" style="width:100%;height: 100%;">
+    </el-dialog>
   </div>
 </template>
 
 <script>
+// 富文本编辑器
+import "quill/dist/quill.core"
+import "quill/dist/quill.snow.css"
+import "quill/dist/quill.bubble.css"
+import { quillEditor } from 'vue-quill-editor'
+
+import { cloneDeep } from 'lodash'
 export default {
   name: '',
+  components: {
+    quillEditor
+  },
   data() {
     return {
       isActiveTab: 0,
@@ -82,11 +111,14 @@ export default {
       },
       addGoodsForm: {
         goods_name: '',
-        goods_price: '',
-        goods_number: '',
-        goods_weight: '',
+        goods_price: 0,
+        goods_number: 0,
+        goods_weight: 0,
         goods_introduce: '',
         goods_cat: [],
+        pics: [],
+        goods_introduce: '',
+        attrs: [],
       },
       categoryList: [],
       cateProp: {
@@ -97,7 +129,16 @@ export default {
       },
       // 参数列表
       manyParamsList: [],
-
+      onlyParamsList: [],
+      checkList: [],//参数选择
+      // 图片
+      uploadeURL: "http://127.0.0.1:8888/api/private/v1/upload",
+      headerObj: {
+        Authorization: window.sessionStorage.getItem("shop_admin_key"),
+      },
+      // 图片预览
+      preViewImg: false,
+      preViewPath: ""
     }
   },
   mounted() {
@@ -119,18 +160,66 @@ export default {
     // 获取参数数据
     async getParamsData() {
       let cateId = this.addGoodsForm.goods_cat[this.addGoodsForm.goods_cat.length - 1]
-      console.log(cateId);
       const res = await this.$API.params.reqGetParamsList(cateId, { sel: 'many' })
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+      const res1 = await this.$API.params.reqGetParamsList(cateId, { sel: 'only' })
+      if (res.meta.status !== 200 && res1.meta.status !== 200) return this.$message.error(res.meta.msg);
       let data = res.data;
       data.forEach(item => {
         item.attr_vals = item.attr_vals ? item.attr_vals.split(',') : []
       })
-      // if (this.activeName === "many")
       this.manyParamsList = data;
-      // else
-      // this.onlyTabData = data;
+      this.onlyParamsList = res1.data;
     },
+    // 图片上传相关
+    handlePreview(file) {
+      this.preViewPath = file.response.data.url;
+      this.preViewImg = true;
+    },
+    handleSuccess(response, file, fileList) {
+      this.addGoodsForm.pics.push({
+        pic: response.data.tmp_path
+      })
+    },
+    handleRemove(file, fileList) {
+      let res = fileList.map(item => {
+        return { pic: item.response.data.tmp_path }
+      })
+      this.addGoodsForm.pics = res;
+    },
+    beforeTabLeave(newVal, oldVal) {
+      if (oldVal === "0" && this.addGoodsForm.goods_cat.length !== 3) {
+        this.$message.error('请先选择三级分类')
+        return false
+      }
+    },
+    // 确定添加商品
+    addGoods() {
+      this.$refs.addGoodsFormRef.validate(async valid => {
+        if (!valid) {
+          return this.$message.error('请填写完整的商品信息')
+        }
+        let form = cloneDeep(this.addGoodsForm)
+        form.goods_cat = form.goods_cat.join(',');
+        this.manyParamsList.forEach(item => {
+          this.addGoodsForm.attrs.push({
+            attr_id: item.attr_id,
+            attr_value: item.attr_vals.join(' '),
+          })
+        })
+        this.onlyParamsList.forEach(item => {
+          this.addGoodsForm.attrs.push({
+            attr_id: item.attr_id,
+            attr_value: item.attr_vals
+          })
+        })
+        form.attrs = this.addGoodsForm.attrs;
+        const res = await this.$API.goodsList.reqAddGoodsList(form)
+        if (res.meta.status !== 201) return this.$message.error(res.meta.msg)
+        this.$message.success(res.meta.msg);
+        this.$router.push('/goods/goodslist/list')
+      });
+    }
+
   },
 }
 </script>
@@ -138,5 +227,11 @@ export default {
 <style lang="scss" scoped>
 .el-tab-pane {
   padding: 0px 20px;
+}
+.el-checkbox.is-bordered + .el-checkbox.is-bordered {
+  margin-left: 0;
+}
+::v-deep .ql-container {
+  min-height: 300px;
 }
 </style>

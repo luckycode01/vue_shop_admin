@@ -2,5 +2,8 @@ import request from "@/utils/request";
 export default {
   reqGetGoodsList(data) {
     return request.get("goods", { params: data });
+  },
+  reqAddGoodsList(data) {
+    return request.goods("goods", { params: data });
   }
 };
