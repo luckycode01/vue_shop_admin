@@ -8,12 +8,14 @@ import {
   removeUsername
 } from "@/utils/auth";
 import { resetRouter } from "@/router";
+import router from "@/router";
 
 const getDefaultState = () => {
   return {
     token: getToken(),
     name: "",
-    avatar: ""
+    avatar: "",
+    routes: []
   };
 };
 

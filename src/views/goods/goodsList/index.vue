@@ -23,9 +23,9 @@
           </template>
         </el-table-column>
         <el-table-column label="操作" width="100px">
-          <template>
-            <el-button type="primary" size="mini" circle icon="el-icon-edit"></el-button>
-            <el-button type="danger" size="mini" circle icon="el-icon-delete"></el-button>
+          <template slot-scope="{row}">
+            <el-button type="primary" size="mini" circle icon="el-icon-edit" @click="toEdit(row.goods_id)"></el-button>
+            <el-button type="danger" size="mini" circle icon="el-icon-delete" @click="deleteGoods(row)"></el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -37,6 +37,7 @@
 </template>
 
 <script>
+import { params } from '@/api';
 export default {
   name: 'List',
   data() {
@@ -76,7 +77,26 @@ export default {
     },
     addGoods() {
       this.$router.push('/goodslist/list/add')
+    },
+    toEdit(id) {
+      this.$router.push({ path: '/goodslist/list/add', query: { id } })
+    },
+    //删除商品
+    deleteGoods(row) {
+      this.$confirm(`是否删除 ${row.goods_name} `, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        const res = await this.$API.goodsList.reqDeleteGoods(row.goods_id);
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+        this.$message.success(res.meta.msg);
+        this.getGoodsList();
+      }).catch(() => {
+        this.$message.info('已取消删除');
+      });
     }
+
 
   }
 }

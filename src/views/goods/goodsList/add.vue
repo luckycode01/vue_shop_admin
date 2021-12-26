@@ -138,12 +138,17 @@ export default {
       },
       // 图片预览
       preViewImg: false,
-      preViewPath: ""
+      preViewPath: "",
+
+      goods_id: '',
     }
+  },
+  created() {
+    this.goods_id = this.$route.query.id || ''
   },
   mounted() {
     this.getCategoryList();
-
+    this.getGoodsDetail();
   },
   methods: {
     async getCategoryList() {
@@ -156,6 +161,18 @@ export default {
     handleChange(val) {
       this.addGoodsForm.goods_cat = val;
       this.getParamsData();
+    },
+    // 编辑根据Id获取商品信息；
+    async getGoodsDetail() {
+      if (this.goods_id) {
+        const res = await this.$API.goodsList.reqGetGoodsDetail(this.goods_id)
+        if (res.meta.status !== 200)
+          return this.$message.error('获取商品信息失败')
+        // 保存获取的商品分类列表
+        res.data.goods_cat = res.data.goods_cat.split(',');
+        res.data.goods_cat = res.data.goods_cat.map(item => parseInt(item));
+        this.addGoodsForm = res.data;
+      }
     },
     // 获取参数数据
     async getParamsData() {
@@ -213,12 +230,13 @@ export default {
           })
         })
         form.attrs = this.addGoodsForm.attrs;
-        const res = await this.$API.goodsList.reqAddGoodsList(form)
-        if (res.meta.status !== 201) return this.$message.error(res.meta.msg)
+        const res = await this.$API.goodsList.reqAddGoodsList(form, this.goods_id)
+        if (res.meta.status !== 201 && res.meta.status !== 200) return this.$message.error(res.meta.msg)
         this.$message.success(res.meta.msg);
         this.$router.push('/goods/goodslist/list')
       });
-    }
+    },
+
 
   },
 }

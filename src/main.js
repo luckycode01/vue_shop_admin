@@ -18,6 +18,8 @@ import "@/permission"; // permission control
 // 导入请求函数
 import * as API from "@/api";
 //
+import "@/utils/dateFormat";
+
 import HintButton from "@/components/HintButton";
 import TreeTable from "vue-table-with-tree-grid";
 
