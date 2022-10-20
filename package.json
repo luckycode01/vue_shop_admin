@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "axios": "0.18.1",
-    "core-js": "3.6.5",
+    "core-js": "^3.6.5",
     "echarts": "^5.2.2",
     "echarts-gl": "^2.0.8",
     "element-ui": "2.13.2",
